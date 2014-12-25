@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.muzongyan.recruit.crawler.mappers.JobDetailMapper">
+
+  <insert id="add" parameterType="JobDetail">
+    INSERT INTO lagou_job_detail(url, url_company, url_category, name, salary, location,
+    experience, education, work_pattern, attract, public_date, description, create_time)
+    VALUES (#{url}, #{urlCompany}, #{urlCategory}, #{name}, #{salary}, #{location}, #{experience}, #{education},
+    #{workPattern}, #{attract}, #{publicDate}, #{description}, now())
+    ON DUPLICATE KEY UPDATE url_company = VALUES(url_company), url_category = VALUES(url_category),
+    name = VALUES(name), salary = VALUES(salary), location = VALUES(location), 
+    experience = VALUES(experience), education = VALUES(education), 
+    work_pattern = VALUES(work_pattern), attract = VALUES(attract), 
+    public_date = VALUES(public_date), description = VALUES(description), update_time = now()
+  </insert>
+
+</mapper>
