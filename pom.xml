@@ -35,16 +35,17 @@
 
     <maven.compiler.plugin>2.3.2</maven.compiler.plugin>
     <maven.failsafe.plugin>2.4.3-alpha-1</maven.failsafe.plugin>
+    <maven.shade.plugin>2.1</maven.shade.plugin>
 
     <!-- Tools -->
     <gson.version>2.3</gson.version>
     <jackson.version>2.4.2</jackson.version>
     <resteasy.jackson.version>1.1.GA</resteasy.jackson.version>
-    
+
     <!-- about crawler -->
     <jsoup.version>1.8.1</jsoup.version>
     <crawler4j.version>3.5</crawler4j.version>
-    
+
     <!-- jedis -->
     <jedis.version>2.6.0</jedis.version>
 
@@ -52,6 +53,29 @@
 
   <build>
     <finalName>${project.artifactId}</finalName>
+
+    <resources>
+      <!-- for mybatis xml -->
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*.properties</include>
+          <include>**/*.xml</include>
+          <include>**/*.tld</include>
+        </includes>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>src/main/java</directory>
+        <includes>
+          <include>**/*.properties</include>
+          <include>**/*.xml</include>
+          <include>**/*.tld</include>
+        </includes>
+        <filtering>false</filtering>
+      </resource>
+    </resources>
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -76,6 +100,33 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>${maven.shade.plugin}</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <transformers>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                  <mainClass>com.muzongyan.recruit.crawler.clients.App</mainClass>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.handlers</resource>
+                </transformer>
+                <transformer implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+                  <resource>META-INF/spring.schemas</resource>
+                </transformer>
+              </transformers>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
     </plugins>
   </build>
 
@@ -145,18 +196,9 @@
       <version>${logback.version}</version>
     </dependency>
 
-<!--     <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <version>${slf4j.version}</version>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <version>${log4j.version}</version>
-      <scope>runtime</scope>
-    </dependency> -->
+    <!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-log4j12</artifactId> <version>${slf4j.version}</version> 
+      <scope>runtime</scope> </dependency> <dependency> <groupId>log4j</groupId> <artifactId>log4j</artifactId> <version>${log4j.version}</version> 
+      <scope>runtime</scope> </dependency> -->
 
     <!-- Spring -->
     <!-- Core utilities used by other modules. Define this if you use Spring Utility APIs (org.springframework.core.*/org.springframework.util.*) -->
@@ -361,7 +403,7 @@
       <artifactId>jackson-databind</artifactId>
       <version>${jackson.version}</version>
     </dependency>
-    
+
     <!-- jsoup -->
     <dependency>
       <groupId>org.jsoup</groupId>
@@ -375,14 +417,14 @@
       <artifactId>crawler4j</artifactId>
       <version>${crawler4j.version}</version>
     </dependency>
-    
+
     <!-- jedis -->
     <dependency>
-        <groupId>redis.clients</groupId>
-        <artifactId>jedis</artifactId>
-        <version>${jedis.version}</version>
-        <type>jar</type>
-        <scope>compile</scope>
+      <groupId>redis.clients</groupId>
+      <artifactId>jedis</artifactId>
+      <version>${jedis.version}</version>
+      <type>jar</type>
+      <scope>compile</scope>
     </dependency>
 
   </dependencies>

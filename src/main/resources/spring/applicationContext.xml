@@ -69,8 +69,8 @@
   <bean id="jedisPool" class="redis.clients.jedis.JedisPool">
     <constructor-arg index="0" ref="jedisPoolConfig" />
     <constructor-arg index="1" value="${jedis.master.ip}" />
-    <constructor-arg index="2" value="${jedis.master.port}" />
-    <constructor-arg index="3" value="${jedis.master.timeout}" />
+    <constructor-arg index="2" value="${jedis.master.port}" type="int" />
+    <constructor-arg index="3" value="${jedis.master.timeout}" type="int" />
   </bean>
 
 </beans>
