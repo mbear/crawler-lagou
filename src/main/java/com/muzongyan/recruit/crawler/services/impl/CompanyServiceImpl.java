@@ -47,9 +47,15 @@ public class CompanyServiceImpl implements CompanyService {
     private List<CompanyDomain> domainList = new ArrayList<CompanyDomain>();
 
     @Override
-    public void fetchDomainList() throws IOException {
+    public void fetchDomainList() {
         // 访问 http://www.lagou.com/gongsi 页面
-        Document doc = Jsoup.connect(companySeed).get();
+        Document doc;
+        try {
+            doc = Jsoup.connect(companySeed).timeout(2000).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
 
         // 定位 “行业领域”元素
         Element domain = null;
@@ -79,7 +85,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public void fetchCompanyList() throws IOException {
+    public void fetchCompanyList() {
 
         // 取得所有行业领域的url
         Set<String> urls = new HashSet<String>();
@@ -95,7 +101,14 @@ public class CompanyServiceImpl implements CompanyService {
         // 遍历行业领域url，访问公司list页面，解析公司详细介绍url
         for (String url : urls) {
             for (int pn = 1;; pn++) {
-                Document doc = Jsoup.connect(url + "?pn=" + pn).get();
+                System.out.println("parse company list page === " + url + "?pn=" + pn);
+                Document doc;
+                try {
+                    doc = Jsoup.connect(url + "?pn=" + pn).timeout(2000).get();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    continue;
+                }
                 if (doc.select("form#companyListForm > div") == null
                         || doc.select("form#companyListForm > div").hasClass("noresult")) {
                     // 暂时没有符合该搜索条件的公司信息
@@ -114,7 +127,7 @@ public class CompanyServiceImpl implements CompanyService {
     }
 
     @Override
-    public boolean fetchCompanyDetail() throws InterruptedException, IOException {
+    public boolean fetchCompanyDetail() {
         String url = jedisDao.popCompanyUrlLis();
         if (!StringUtils.isEmpty(url)) {
             CompanyDetail detail = this.parseCompanyDetial(url);
@@ -132,13 +145,19 @@ public class CompanyServiceImpl implements CompanyService {
      * @return
      * @throws IOException
      */
-    private CompanyDetail parseCompanyDetial(String url) throws IOException {
+    private CompanyDetail parseCompanyDetial(String url) {
         CompanyDetail detail = new CompanyDetail();
 
         detail.setUrl(url);
 
         // 访问公司页面，解析各字段
-        Document doc = Jsoup.connect(url).get();
+        Document doc;
+        try {
+            doc = Jsoup.connect(url).timeout(2000).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
         Element contentLeft = doc.select("div.content_l").first();
         Element logo = contentLeft.select("div.c_logo").first();
         Element box = contentLeft.select("div.c_box").first();

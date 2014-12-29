@@ -45,11 +45,17 @@ public class JobServiceImpl implements JobService {
     private JobDetailMapper detailMapper;
 
     @Override
-    public void fetchCategoryList() throws IOException {
+    public void fetchCategoryList() {
         List<JobCategory> jcs = new ArrayList<JobCategory>();
 
         // 访问 http://www.lagou.com/ 页面
-        Document doc = Jsoup.connect(jobSeed).get();
+        Document doc;
+        try {
+            doc = Jsoup.connect(jobSeed).timeout(2000).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return;
+        }
 
         // 定位“职位分类”区域
         Elements levelOneCategories = doc.select("div.mainNavs").first().children();
@@ -86,13 +92,20 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public void fetchJobList() throws IOException {
+    public void fetchJobList() {
         Set<String> urls = categoryMapper.getAllUrl();
 
         // 遍历职位分类url，访问职位list页面，解析职位详细介绍url
         for (String url : urls) {
             for (int pn = 1; pn <= 30; pn++) {
-                Document doc = Jsoup.connect(url + "?pn=" + pn).get();
+                System.out.println("parse job list page === " + url + "?pn=" + pn);
+                Document doc;
+                try {
+                    doc = Jsoup.connect(url + "?pn=" + pn).timeout(2000).get();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    continue;
+                }
                 if (doc.select("div#container > div.content > div") == null
                         || doc.select("div#container > div.content > div").hasClass("noresult")) {
                     // 暂时没有符合该搜索条件的公司信息
@@ -112,7 +125,7 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public boolean fetchJobDetail() throws InterruptedException, IOException {
+    public boolean fetchJobDetail() {
         String url = jedisDao.popJobUrlLis();
         if (!StringUtils.isEmpty(url)) {
             JobDetail detail = this.parseJobDetail(url);
@@ -130,7 +143,7 @@ public class JobServiceImpl implements JobService {
      * @return
      * @throws IOException
      */
-    private JobDetail parseJobDetail(String url) throws IOException {
+    private JobDetail parseJobDetail(String url) {
         JobDetail detail = new JobDetail();
 
         detail.setUrl(url);
@@ -139,7 +152,13 @@ public class JobServiceImpl implements JobService {
         detail.setUrlCategory(jedisDao.getJobCategory(url));
 
         // 访问公司页面，解析各字段
-        Document doc = Jsoup.connect(url).get();
+        Document doc;
+        try {
+            doc = Jsoup.connect(url).timeout(2000).get();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
 
         Element jobCompany = doc.select("div.content_r").first();
 

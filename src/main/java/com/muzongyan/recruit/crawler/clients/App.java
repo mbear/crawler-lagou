@@ -3,10 +3,9 @@
  */
 package com.muzongyan.recruit.crawler.clients;
 
-import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -30,113 +29,107 @@ public class App {
 
     /**
      * @param args
+     * @throws InterruptedException
      */
-    public static void main(String[] args) {
-
-        int task = 0;
-        if (args == null || args.length == 0) {
-            System.out.println("Please input your task num:");
-            System.out.println("1. company producer");
-            System.out.println("2. company consumer");
-            System.out.println("3. job producer");
-            System.out.println("4. job consumer");
-            return;
-        } else {
-            task = Integer.parseInt(args[0]);
-        }
+    public static void main(String[] args) throws InterruptedException {
 
         springContext = new ClassPathXmlApplicationContext(CONFIG_PATH);
 
-        switch (task) {
-        case 1:
-            ExecutorService es1 = Executors.newSingleThreadExecutor();
-            es1.execute(new Runnable() {
+        final CountDownLatch companyLatch = new CountDownLatch(1);
+        final CountDownLatch jobLatch = new CountDownLatch(1);
+
+        ExecutorService companyProducer = Executors.newSingleThreadExecutor();
+        companyProducer.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    CompanyService companyService = springContext.getBean(CompanyServiceImpl.class);
+                    // 抓取公司的行业领域信息列表
+                    companyService.fetchDomainList();
+                    // 获取所有公司页面列表
+                    companyService.fetchCompanyList();
+                } finally {
+                    companyLatch.countDown();
+                }
+            }
+        });
+
+        companyProducer.shutdown();
+
+        ExecutorService jobProducer = Executors.newSingleThreadExecutor();
+        jobProducer.execute(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    JobService jobService = springContext.getBean(JobServiceImpl.class);
+                    // 抓取职位分类信息列表
+                    jobService.fetchCategoryList();
+                    // 获取所有职位页面列表
+                    jobService.fetchJobList();
+                } finally {
+                    jobLatch.countDown();
+                }
+            }
+        });
+
+        jobProducer.shutdown();
+
+        // companyConsumer 开始
+        ExecutorService companyConsumer = Executors.newFixedThreadPool(5);
+        for (int i = 1; i < 10; i++) {
+            companyConsumer.execute(new Runnable() {
 
                 @Override
                 public void run() {
-                    CompanyService companyService = springContext.getBean(CompanyServiceImpl.class);
                     try {
-                        // 抓取公司的行业领域信息列表
-                        companyService.fetchDomainList();
-                        // 获取所有公司页面列表
-                        companyService.fetchCompanyList();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-            es1.shutdown();
-            break;
+                        companyLatch.await();
 
-        case 2:
-            ScheduledExecutorService ses1 = Executors.newScheduledThreadPool(3);
-            for (int i = 1; i < 3; i++) {
-                ses1.execute(new Runnable() {
-
-                    @Override
-                    public void run() {
                         CompanyService companyService = springContext.getBean(CompanyServiceImpl.class);
                         boolean flag = true;
                         while (flag) {
+                            // 抓取公司的详细信息
                             try {
-                                // 抓取公司的详细信息
                                 flag = companyService.fetchCompanyDetail();
-                            } catch (InterruptedException | IOException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }
-                    }
-                });
-            }
-            ses1.shutdown();
-            break;
-
-        case 3:
-            ExecutorService es2 = Executors.newSingleThreadExecutor();
-            es2.execute(new Runnable() {
-
-                @Override
-                public void run() {
-                    JobService jobService = springContext.getBean(JobServiceImpl.class);
-                    try {
-                        // 抓取职位分类信息列表
-                        jobService.fetchCategoryList();
-                        // 获取所有职位页面列表
-                        jobService.fetchJobList();
-                    } catch (IOException e) {
+                    } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
+
                 }
             });
-            es2.shutdown();
-            break;
+        }
+        companyConsumer.shutdown();
 
-        case 4:
-            ScheduledExecutorService ses2 = Executors.newScheduledThreadPool(5);
-            for (int i = 1; i < 5; i++) {
-                ses2.execute(new Runnable() {
+        // jobProducer 开始
+        ExecutorService jobConsumer = Executors.newFixedThreadPool(5);
+        for (int i = 1; i < 10; i++) {
+            jobConsumer.execute(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        jobLatch.await();
 
-                    @Override
-                    public void run() {
                         JobService jobService = springContext.getBean(JobServiceImpl.class);
                         boolean flag = true;
                         while (flag) {
+                            // 抓取职位的详细信息
                             try {
-                                // 抓取职位的详细信息
                                 flag = jobService.fetchJobDetail();
-                            } catch (InterruptedException | IOException e) {
+                            } catch (Exception e) {
                                 e.printStackTrace();
                             }
                         }
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                });
-            }
-            ses2.shutdown();
-            break;
 
-        default:
-            break;
+                }
+            });
         }
+        jobConsumer.shutdown();
     }
 
 }
