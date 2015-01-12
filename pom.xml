@@ -48,6 +48,9 @@
 
     <!-- jedis -->
     <jedis.version>2.6.0</jedis.version>
+    
+    <!-- solrj -->
+    <solrj.version>4.9.1</solrj.version>
 
   </properties>
 
@@ -425,6 +428,13 @@
       <version>${jedis.version}</version>
       <type>jar</type>
       <scope>compile</scope>
+    </dependency>
+    
+    <!-- Solrj -->
+    <dependency>
+        <groupId>org.apache.solr</groupId>
+        <artifactId>solr-solrj</artifactId>
+        <version>${solrj.version}</version>
     </dependency>
 
   </dependencies>

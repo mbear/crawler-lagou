@@ -3,6 +3,8 @@
  */
 package com.muzongyan.recruit.crawler.services;
 
+import com.muzongyan.recruit.crawler.dtos.JobDetail;
+
 /**
  * 主要任务：抓取职位信息，过程中抓取职位所属分类信息
  * 
@@ -32,6 +34,8 @@ public interface JobService {
      * 基于 redis list 职位url队列，访问职位详细信息网页，解析页面<br/>
      * 解析结果保存到 mysql table job_detail
      * 
+     * @param jd
+     * @return
      */
-    public boolean fetchJobDetail();
+    public boolean fetchJobDetail(JobDetail jd);
 }

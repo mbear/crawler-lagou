@@ -130,7 +130,7 @@ public class CompanyServiceImpl implements CompanyService {
     public boolean fetchCompanyDetail() {
         String url = jedisDao.popCompanyUrlLis();
         if (!StringUtils.isEmpty(url)) {
-            CompanyDetail detail = this.parseCompanyDetial(url);
+            CompanyDetail detail = this.parseCompanyDetail(url);
             detailMapper.add(detail);
             return true;
         } else {
@@ -145,7 +145,7 @@ public class CompanyServiceImpl implements CompanyService {
      * @return
      * @throws IOException
      */
-    private CompanyDetail parseCompanyDetial(String url) {
+    public CompanyDetail parseCompanyDetail(String url) {
         CompanyDetail detail = new CompanyDetail();
 
         detail.setUrl(url);
@@ -236,4 +236,8 @@ public class CompanyServiceImpl implements CompanyService {
         return detail;
     }
 
+    @Override
+    public void saveCompanyDetail(CompanyDetail cd) {
+        detailMapper.add(cd);
+    }
 }

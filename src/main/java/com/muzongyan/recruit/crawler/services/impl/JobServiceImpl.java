@@ -125,11 +125,13 @@ public class JobServiceImpl implements JobService {
     }
 
     @Override
-    public boolean fetchJobDetail() {
+    public boolean fetchJobDetail(JobDetail jd) {
         String url = jedisDao.popJobUrlLis();
         if (!StringUtils.isEmpty(url)) {
-            JobDetail detail = this.parseJobDetail(url);
-            detailMapper.add(detail);
+            // 解析职位详情
+            jd = this.parseJobDetail(url);
+            detailMapper.add(jd);
+
             return true;
         } else {
             return false;
@@ -227,4 +229,5 @@ public class JobServiceImpl implements JobService {
 
         return detail;
     }
+
 }
