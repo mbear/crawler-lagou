@@ -35,7 +35,7 @@ public interface JobService {
      * 解析结果保存到 mysql table job_detail
      * 
      * @param jd
-     * @return
+     * @return jobDetail
      */
-    public boolean fetchJobDetail(JobDetail jd);
+    public JobDetail fetchJobDetail();
 }
