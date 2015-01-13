@@ -183,6 +183,7 @@ public class App {
                                 doc.setField("attract", jd.getAttract());
                                 doc.setField("public_date", jd.getPublicDate());
                                 doc.setField("description", jd.getDescription());
+                                solr.add(doc);
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
