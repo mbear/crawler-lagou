@@ -53,6 +53,7 @@ public class App {
             App.companyTask();
             break;
         default:
+            System.out.println("Please input string 'job' to run job task, 'company' to run company task");
             break;
         }
 
